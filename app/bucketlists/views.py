@@ -20,7 +20,9 @@ def verify_auth_token(token):
     try:
         data = token_signer.unsign(token)
         print(data)
-        user = User.query.filter_by(id=data).scalar()
+        user = User.query.filter_by(username=data).scalar()
+        print (user.token)
+        print(token)
         if not user:
             return jsonify({'error': 'Invalid credentials'}),401
         if token != user.token:
