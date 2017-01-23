@@ -1,16 +1,35 @@
 from flask import Blueprint, request, jsonify, abort
-from flask import url_for
+from flask.ext.httpauth import HTTPBasicAuth
+from flask import url_for, g
 from flask_httpauth import HTTPTokenAuth
-from itsdangerous import BadTimeSignature, BadSignature
+from itsdangerous import SignatureExpired, BadSignature
 
 from app import token_signer, db, app
 from app.auth.models import User
 from app.bucketlists.models import BucketList, BucketListItem
 
+auth = HTTPTokenAuth('Token')
+
 
 bucketlists = Blueprint('bucketlists', __name__, url_prefix='/bucketlists')
 
 buckets = []
+
+@auth.verify_token
+def verify_auth_token(token):
+    try:
+        data = token_signer.unsign(token)
+        print(data)
+        user = User.query.filter_by(id=data).scalar()
+        if not user:
+            return jsonify({'error': 'Invalid credentials'}),401
+        if token != user.token:
+            return jsonify({'error': 'Invalid credentials'}),401
+        g.user = user
+        return True
+    except (SignatureExpired, BadSignature):
+        return jsonify({'error': 'Invalid credentials'}),401 # valid token, but expired
+    return jsonify({'error': 'No token supplied'})
 
 
 @app.route('/')
@@ -19,6 +38,7 @@ def home():
 
 
 @app.route('/bucketlists/', methods=['POST'])
+@auth.login_required
 def create_new_bucketlist():
     """Adds a new bucketlist"""
     name = request.form.get('name')
@@ -35,6 +55,7 @@ def create_new_bucketlist():
 
 
 @app.route('/bucketlists/', methods=['GET'])
+@auth.login_required
 def fetch_all_bucketlists():
     """Returns all bucketlists"""
     bucketlists = BucketList.query.all()
@@ -57,11 +78,13 @@ def fetch_all_bucketlists():
 
 
 @app.route('/bucketlists/?q=Check', methods=['GET'])
+@auth.login_required
 def search_bucketlist_by_name():
     pass
 
 
 @app.route('/bucketlists/<id>', methods=['GET'])
+@auth.login_required
 def fetch_single_bucketlist(id):
     """Returns a single bucketlist"""
     bucketlist = BucketList.query.filter_by(id=id).first()
@@ -83,25 +106,28 @@ def fetch_single_bucketlist(id):
 
 
 @app.route('/bucketlists/<id>', methods=['PUT'])
+@auth.login_required
 def update_bucketlist(id):
     """Updates a bucketlist's details"""
-    id = request.form.get('id')
     update_bucket = BucketList.query.filter_by(
         id=id).scalar()
     if not update_bucket:
         return jsonify({"error": "Bucketlist not found"}), 404
-    update_bucket.name = request.form.get('name', update_bucket.name)
     bucketlists = BucketList.query.all()
     for bucket in bucketlists:
-        if bucket.name == update_bucket.name:
+        if bucket.name == request.form.get('name'):
             return jsonify({
                 "error": "That bucketlist name has already been used"
             }), 403
-    db.session.save()
-    return jsonify({"success": "Changes saved to bucketlist"}), 200
+    update_bucket.name = request.form.get('name', update_bucket.name)
+    update_bucket.save()
+    return jsonify({"success": "Changes saved to bucketlist",
+        "name": update_bucket.name
+        }), 200
 
 
 @app.route('/bucketlists/<id>', methods=['DELETE'])
+@auth.login_required
 def delete_bucketlist(id):
     delete_db = BucketList.query.filter_by(id=id).scalar()
     if delete_db is None:
@@ -112,6 +138,7 @@ def delete_bucketlist(id):
 
 
 @app.route('/bucketlists/<id>/items/', methods=['POST'])
+@auth.login_required
 def add_bucketlist_item(id):
     """Adds an item to an existing bucketlist"""
     bucketlist_id = request.form.get(['id'])
@@ -131,6 +158,7 @@ def add_bucketlist_item(id):
 
 
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['PUT'])
+@auth.login_required
 def update_bucketlist_item(id, item_id):
     id = request.form.get('id')
     item_id = request.form.get('item_id')
@@ -149,6 +177,7 @@ def update_bucketlist_item(id, item_id):
 
 
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['DELETE'])
+@auth.login_required
 def delete_bucketlist_item():
     id = request.form.get('id')
     item_id = request.form.get('item_id')

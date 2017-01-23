@@ -44,7 +44,7 @@ class BaseTestCase(unittest.TestCase):
 
         self.token = {'Authorization': 'Token ' + self.austin.token.decode()}
         self.expired_token = {'Authorization': 'Token {}'.format(
-            'austin.C0-S_w.3D7n2H9j6hrs1jicEEjifLO-fDc')}
+            'austin.C2dRGQ.5bEgRGpUpHnxUDfS7WMB6crzlLA')}
         self.invalid_token = {'Authorization': 'Token abc'}
 
     def tearDown(self):

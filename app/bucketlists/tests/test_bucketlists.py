@@ -1,6 +1,5 @@
 from app.test_setup import BaseTestCase
 
-
 class TestBucketList(BaseTestCase):
     def test_creates_new_bucketlist_with_valid_token(self):
         """
@@ -50,8 +49,8 @@ class TestBucketList(BaseTestCase):
         response = self.client.post(
             '/bucketlists/', data=data, headers=self.invalid_token,
             follow_redirects=True)
-        # Assert the response is forbidden
-        self.assertEqual(403, response.status_code)
+        # Assert the response is unauthorised
+        self.assertEqual(401, response.status_code)
         response = response.data.decode('utf-8')
         self.assertIn('invalid token', response)
 
@@ -65,8 +64,8 @@ class TestBucketList(BaseTestCase):
         response = self.client.post(
             '/bucketlists/', data=data, headers=self.expired_token,
             follow_redirects=True)
-        # Assert the response is forbidden
-        self.assertEqual(403, response.status_code)
+        # Assert the response is unauthorised
+        self.assertEqual(401, response.status_code)
         response = response.data.decode('utf-8')
         self.assertIn('expired token', response)
 
@@ -78,7 +77,7 @@ class TestSingleBucketList(BaseTestCase):
         """Test successful fetching of a bucketlist"""
         response = self.client.get(
             '/bucketlists/1', headers=self.token, follow_redirects=True)
-        # self.assertEqual(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         # Assert the expected data is in the response
         response = response.data.decode('utf-8')
         self.assertIn('date_created', response)
@@ -98,8 +97,8 @@ class TestSingleBucketList(BaseTestCase):
         response = self.client.get(
             '/bucketlists/1', headers=self.invalid_token,
             follow_redirects=True)
-        # Assert the response is forbidden
-        self.assertEqual(403, response.status_code)
+        # Assert the response is unauthorised
+        self.assertEqual(401, response.status_code)
         response = response.data.decode('utf-8')
         self.assertIn('invalid token', response)
 
@@ -108,8 +107,8 @@ class TestSingleBucketList(BaseTestCase):
         response = self.client.get(
             '/bucketlists/1', headers=self.expired_token,
             follow_redirects=True)
-        # Assert the response is forbidden
-        self.assertEqual(403, response.status_code)
+        # Assert the response is unauthorised
+        self.assertEqual(401, response.status_code)
         response = response.data.decode('utf-8')
         self.assertIn('expired token', response)
 
@@ -131,11 +130,11 @@ class TestSingleBucketList(BaseTestCase):
         response = self.client.put(
             '/bucketlists/1', data=data, headers=self.token,
             follow_redirects=True)
-        # Assert the response is forbidden
-        self.assertEqual(403, response.status_code)
+        # Assert the response is unauthorised
+        self.assertEqual(401, response.status_code)
         response = response.data.decode('utf-8')
         self.assertIn('error', response)
-        self.assertIn('A bucketlist with that name already exists', response)
+        self.assertIn('That bucketlist name has already been used', response)
 
     def test_deletes_users_bucketlist(self):
         """Asserts user can successfully delete a bucketlist"""

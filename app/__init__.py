@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import TimestampSigner
-
+from itsdangerous import TimestampSigner, SignatureExpired, BadSignature
 import config
 
 app = Flask(__name__)
