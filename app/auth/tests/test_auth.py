@@ -83,7 +83,7 @@ class TestLogin(BaseTestCase):
         # Decode and verify response data
         response = response.data.decode('utf-8')
         self.assertIn('error', response)
-        self.assertIn('Please fill in a username in your request', response)
+        self.assertIn('Please supply a username in your request', response)
 
     def test_login_fails_no_password_submitted(self):
         response = self.client.post('/auth/login/', data={
@@ -94,7 +94,7 @@ class TestLogin(BaseTestCase):
         # Decode and verify response data
         response = response.data.decode('utf-8')
         self.assertIn('error', response)
-        self.assertIn('Please fill in a password in your request', response)
+        self.assertIn('Please supply a password in your request', response)
 
     def test_login_fails_invalid_credentials(self):
         response = self.client.post('/auth/login/', data={

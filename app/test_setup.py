@@ -46,7 +46,6 @@ class BaseTestCase(unittest.TestCase):
         self.expired_token = {'Authorization': 'Token {}'.format(
             'austin.C0-S_w.3D7n2H9j6hrs1jicEEjifLO-fDc')}
         self.invalid_token = {'Authorization': 'Token abc'}
-        db.session.commit()
 
     def tearDown(self):
         """Clears data upon test completion"""

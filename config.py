@@ -1,6 +1,6 @@
 import os
 
-SECRET_KEY = 'my_key'
+SECRET_KEY = 'vhnvgcgxfzgyjcfdhtdcxz5w6e43rthr53x5twt'
 
 DEBUG = True
 
