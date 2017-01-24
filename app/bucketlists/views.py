@@ -1,9 +1,8 @@
 from flask import Blueprint, request, jsonify, abort
-from flask.ext.httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPBasicAuth
 from flask import url_for, g
 from flask_httpauth import HTTPTokenAuth
-from itsdangerous import SignatureExpired, BadSignature
-
+from itsdangerous import SignatureExpired, BadSignature, TimedJSONWebSignatureSerializer as Serializer
 from app import token_signer, db, app
 from app.auth.models import User
 from app.bucketlists.models import BucketList, BucketListItem
@@ -15,23 +14,36 @@ bucketlists = Blueprint('bucketlists', __name__, url_prefix='/bucketlists')
 
 buckets = []
 
+@app.errorhandler(401)
+def custom401error(exception):
+    return jsonify(exception.description), 401
+
+@app.errorhandler(403)
+def custom403error(exception):
+    return jsonify(exception.description), 403
+
+@app.errorhandler(404)
+def custom404error(exception):
+    return jsonify(exception.description), 404
+
+@app.errorhandler(400)
+def custom400error(exception):
+    return jsonify(exception.description), 400
+
 @auth.verify_token
 def verify_auth_token(token):
+    s = Serializer(app.config['SECRET_KEY'])
     try:
-        data = token_signer.unsign(token)
-        print(data)
-        user = User.query.filter_by(username=data).scalar()
-        print (user.token)
-        print(token)
-        if not user:
-            return jsonify({'error': 'Invalid credentials'}),401
-        if token != user.token:
-            return jsonify({'error': 'Invalid credentials'}),401
-        g.user = user
-        return True
-    except (SignatureExpired, BadSignature):
-        return jsonify({'error': 'Invalid credentials'}),401 # valid token, but expired
-    return jsonify({'error': 'No token supplied'})
+        data = s.loads(token)
+        user = User.query.filter_by(username=data['username'])
+        if user:
+            g.user = user
+            return True
+    except (SignatureExpired ,BadSignature):
+        return abort(401, {'message':'invalid token'})  # invalid token
+
+    return False
+    
 
 
 @app.route('/')
@@ -115,12 +127,9 @@ def update_bucketlist(id):
         id=id).scalar()
     if not update_bucket:
         return jsonify({"error": "Bucketlist not found"}), 404
-    bucketlists = BucketList.query.all()
-    for bucket in bucketlists:
-        if bucket.name == request.form.get('name'):
-            return jsonify({
-                "error": "That bucketlist name has already been used"
-            }), 403
+    existing_bucketlist = BucketList.query.filter_by(name=request.form.get('name')).first()
+    if existing_bucketlist:
+        return abort(403, {'error':'That bucketlist name has already been used'})
     update_bucket.name = request.form.get('name', update_bucket.name)
     update_bucket.save()
     return jsonify({"success": "Changes saved to bucketlist",
@@ -143,10 +152,14 @@ def delete_bucketlist(id):
 @auth.login_required
 def add_bucketlist_item(id):
     """Adds an item to an existing bucketlist"""
-    bucketlist_id = request.form.get(['id'])
-    name = request.form.get(['name'])
+    bucketlist_id = request.form.get('id')
+    bucketlist = BucketList.query.filter_by(id=id).first()
+    if not bucketlist:
+        return abort(404, {"error" : "bucket list does not exist"})
+    name = request.form.get('name')
     description = request.form.get('description')
-    new_bucketlistitem = BucketListItem(name, description, bucketlist_id)
+    done = 'false'
+    new_bucketlistitem = BucketListItem(name, description, bucketlist_id, done)
     new_bucketlistitem.save()
     new_bucketlistitem.refresh_from_db()
     return jsonify({'Successfully added bucketlist item':
@@ -162,20 +175,31 @@ def add_bucketlist_item(id):
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['PUT'])
 @auth.login_required
 def update_bucketlist_item(id, item_id):
-    id = request.form.get('id')
-    item_id = request.form.get('item_id')
+    id = id
+    item_id = item_id
     update_bucket_item = BucketListItem.query.filter_by(
         id=item_id, bucketlist_id=id).scalar()
-    if request.form.get('name') is not None:
+    if not update_bucket_item:
+        abort(404, ({"error" : "buckelist item not found"}))
+    if request.form.get('name'):
         update_bucket_item.name = request.form.get('name')
-    if request.form.get('description') is not None:
+    if request.form.get('description'):
         update_bucket_item.description = request.form.get(
             'description', update_bucket_item.description)
-    if request.form.get('done').upper != "TRUE" or "FALSE":
-        return ({"error": "done should be either 'True' or 'False'"}), 403
-    update_bucket_item.done = request.form.get('done', update_bucket_item.done)
-    db.session.save()
-    return jsonify({"success": "Changes saved to item"}), 200
+    if request.form.get('done'):
+        print request.form.get('done')
+        if request.form.get('done').upper() != "TRUE" and request.form.get('done').upper() != "FALSE":
+            return abort(400, {"error": "done should be either 'True' or 'False'"})
+        if request.form.get('done').upper() == "TRUE":
+            update_bucket_item.done = True
+        elif request.form.get('done').upper() == "FALSE":
+            update_bucket_item.done = False
+    update_bucket_item.save()
+    return jsonify({"success": "Changes saved to item",
+        "name": update_bucket_item.name,
+        "description": update_bucket_item.description,
+        "done": update_bucket_item.done
+        }), 200
 
 
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['DELETE'])

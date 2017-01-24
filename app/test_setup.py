@@ -35,8 +35,12 @@ class BaseTestCase(unittest.TestCase):
         self.roy_bucketlist.refresh_from_db()
 
         # Add item  to bucket list
+        name = "Learn more django"
+        description = "Learn some JS"
+        bucketlist_id = self.austin_bucketlist.id
+        done = False
         self.austin_bucketlist_item = BucketListItem(
-            "Learn more django", "Learn some JS", self.austin_bucketlist.id)
+            name, description, bucketlist_id,done)
         self.austin_bucketlist_item.save()
         self.austin_bucketlist_item.refresh_from_db()
 

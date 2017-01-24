@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import TimestampSigner, SignatureExpired, BadSignature
 import config
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
 
 app = Flask(__name__)
 

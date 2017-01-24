@@ -1,6 +1,8 @@
 from flask_bcrypt import generate_password_hash, check_password_hash
 
-from app import db, token_signer
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
+from app import db, token_signer, app
 
 
 class User(db.Model):
@@ -22,8 +24,9 @@ class User(db.Model):
     def verify_password_hash(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self):
-        return token_signer.sign(str(self.username))
+    def generate_auth_token(self, expiration = 600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+        return s.dumps({ 'username': self.username })
 
     def save(self):
         db.session.add(self)

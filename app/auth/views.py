@@ -7,6 +7,7 @@ from app import token_signer, db, app
 from app.auth.models import User
 from app.bucketlists.models import BucketList, BucketListItem
 
+
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
 @app.route('/auth/register/', methods=['POST'])
