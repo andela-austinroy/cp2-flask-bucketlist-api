@@ -60,14 +60,16 @@ def home():
 def create_new_bucketlist():
     """Adds a new bucketlist"""
     name = request.form.get('name')
-    new_bucketlist = BucketList(name, 1)
+    created_by = g.user_id
+    new_bucketlist = BucketList(name, created_by)
     new_bucketlist.save()
     new_bucketlist.refresh_from_db()
     return jsonify({'Successfully added bucketlist':
                     {'id': new_bucketlist.id,
                      'name': new_bucketlist.name,
                      'date_created': new_bucketlist.date_created,
-                     'date_modified': new_bucketlist.date_modified
+                     'date_modified': new_bucketlist.date_modified,
+                     'created_by': new_bucketlist.created_by
                      }
                     }), 201
 
@@ -77,22 +79,24 @@ def create_new_bucketlist():
 def fetch_all_bucketlists():
     """Returns all bucketlists"""
 
-    page_no = request.args.get('pag_no', 1)
+    page_no = request.args.get('page_no', 1)
     limit = request.args.get('limit', 20)
     q_name = request.args.get('q', "")
 
     bucketlists = BucketList.query.filter_by(
         created_by=g.user_id).filter(
-        BucketList.name.like('%{}%.'.format(q_name))).paginate(
+        BucketList.name.like('%{}%'.format(q_name))).paginate(
         int(page_no), int(limit))
 
-    if not bucketlists:
-        abort(404, {"error": "No bucketlists added"})
+    print (bucketlists.items)
+
+    if not bucketlists.items:
+        return abort(404, {"error": "No bucketlists added"})
     for bucketlist in bucketlists.items:
         bucket_items = BucketListItem.query.filter_by(
-            bucketlist_id=bucketlist.id).first()
+            bucketlist_id=bucketlist.id).all()
         if bucket_items is None:
-            bucket_items = []
+            list_items = []
         else:
             list_items = [bucket_item.name for bucket_item in bucket_items]
         # buckets.append({'id': bucketlist.id,
