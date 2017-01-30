@@ -40,7 +40,7 @@ class BaseTestCase(unittest.TestCase):
         bucketlist_id = self.austin_bucketlist.id
         done = False
         self.austin_bucketlist_item = BucketListItem(
-            name, description, bucketlist_id,done)
+            name, description, bucketlist_id, done)
         self.austin_bucketlist_item.save()
         self.austin_bucketlist_item.refresh_from_db()
 

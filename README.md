@@ -32,6 +32,13 @@ $ mkvirtualenv amity
 $ pip install -r requirements.txt
 ```
 ### Running the project locally
+
+Run database migrations
+
+```
+$ python manage.py db migrate
+```
+
 Start the local server
 
 ```

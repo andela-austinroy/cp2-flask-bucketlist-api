@@ -99,12 +99,7 @@ def fetch_all_bucketlists():
             list_items = []
         else:
             list_items = [bucket_item.name for bucket_item in bucket_items]
-        # buckets.append({'id': bucketlist.id,
-        #                 'name': bucketlist.name,
-        #                 'items': bucket_items,
-        #                 'date_created': bucketlist.date_created,
-        #                 'date_modified': bucketlist.date_modified
-        #                 })
+
     return jsonify({
         'Bucketlist': [
             {
