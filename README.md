@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/andela-austinroy/cp2-flask-bucketlist-api.svg?branch=develop)](https://travis-ci.org/andela-austinroy/cp2-flask-bucketlist-api) [![Code Health](https://landscape.io/github/andela-austinroy/cp2-flask-bucketlist-api/develop/landscape.svg?style=flat)](https://landscape.io/github/andela-austinroy/cp2-flask-bucketlist-api/develop) [![license](https://img.shields.io/github/license/andela-austinroy/cp2-flask-bucketlist-api.svg)]() [![Coverage Status](https://coveralls.io/repos/github/andela-austinroy/cp2-flask-bucketlist-api/badge.svg?branch=develop)](https://coveralls.io/github/andela-austinroy/cp2-flask-bucketlist-api?branch=develop)
-
 # Flask Bucketlist API
+
+[![Build Status](https://travis-ci.org/andela-austinroy/cp2-flask-bucketlist-api.svg?branch=develop)](https://travis-ci.org/andela-austinroy/cp2-flask-bucketlist-api) [![Code Health](https://landscape.io/github/andela-austinroy/cp2-flask-bucketlist-api/develop/landscape.svg?style=flat)](https://landscape.io/github/andela-austinroy/cp2-flask-bucketlist-api/develop) [![license](https://img.shields.io/github/license/andela-austinroy/cp2-flask-bucketlist-api.svg)]() [![Coverage Status](https://coveralls.io/repos/github/andela-austinroy/cp2-flask-bucketlist-api/badge.svg?branch=develop)](https://coveralls.io/github/andela-austinroy/cp2-flask-bucketlist-api?branch=develop)
 
 Checkpoint 2 project on creating a RESTful bucketlist API using python flask. This project makes use of the Flask framework to execute a RESTful API that allows users to create edit and save bucketlists on a database. Response data is in json format.
 
