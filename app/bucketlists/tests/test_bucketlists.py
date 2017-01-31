@@ -1,5 +1,6 @@
 from app.test_setup import BaseTestCase
 
+
 class TestBucketList(BaseTestCase):
     def test_creates_new_bucketlist_with_valid_token(self):
         """
@@ -141,11 +142,14 @@ class TestSingleBucketList(BaseTestCase):
         response = response.data.decode('utf-8')
         self.assertIn('Successfully deleted bucketlist', response)
 
+
 class TestBucketListItem(BaseTestCase):
     def test_create_new_bucketlist_item(self):
         data = {'name': 'Write tests for the CP',
                 'description': 'write tests to help guide coding process'}
-        response = self.client.post('/bucketlists/1/items/', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.post(
+            '/bucketlists/1/items/', data=data,
+            headers=self.token, follow_redirects=True)
 
         self.assertEqual(201, response.status_code)
 
@@ -156,7 +160,9 @@ class TestBucketListItem(BaseTestCase):
 
     def test_error_on_create_item_on_non_existent_bucketlist(self):
         data = {'name': 'Join the dark side'}
-        response = self.client.post('/bucketlists/100/items/', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.post(
+            '/bucketlists/100/items/', data=data,
+            headers=self.token, follow_redirects=True)
 
         self.assertEqual(404, response.status_code)
 
@@ -165,7 +171,8 @@ class TestBucketListItem(BaseTestCase):
 
     def test_error_on_create_item_without_token(self):
         data = {'name': 'Join the dark side'}
-        response = self.client.post('/bucketlists/1/items/', data=data, follow_redirects=True)
+        response = self.client.post(
+            '/bucketlists/1/items/', data=data, follow_redirects=True)
 
         self.assertEqual(401, response.status_code)
 
@@ -175,7 +182,9 @@ class TestBucketListItem(BaseTestCase):
     def test_update_item_name_and_description(self):
         data = {'name': 'This is updated',
                 'description': 'Updated item right here'}
-        response = self.client.put('/bucketlists/1/items/1', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.put(
+            '/bucketlists/1/items/1', data=data,
+            headers=self.token, follow_redirects=True)
 
         response = response.data.decode('utf-8')
         self.assertIn(data['name'], response)
@@ -183,31 +192,55 @@ class TestBucketListItem(BaseTestCase):
 
     def test_update_item_to_done(self):
         data = {'done': 'true'}
-        response = self.client.put('/bucketlists/1/items/1', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.put(
+            '/bucketlists/1/items/1', data=data,
+            headers=self.token, follow_redirects=True)
 
         response = response.data.decode('utf-8')
         self.assertIn('true', response)
 
     def test_update_item_to_pending(self):
         data = {'done': 'false'}
-        response = self.client.put('/bucketlists/1/items/1', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.put(
+            '/bucketlists/1/items/1', data=data,
+            headers=self.token, follow_redirects=True)
 
         response = response.data.decode('utf-8')
         self.assertIn('false', response)
 
     def test_update_item_invalid_status(self):
         data = {'done': 'khal'}
-        response = self.client.put('/bucketlists/1/items/1', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.put(
+            '/bucketlists/1/items/1', data=data,
+            headers=self.token, follow_redirects=True)
 
         self.assertEqual(400, response.status_code)
 
     def test_error_on_updating_non_existent_item(self):
         data = {'name': 'Trying to update',
                 'description': 'My update attempt'}
-        response = self.client.put('/bucketlists/1/items/100', data=data, headers=self.token, follow_redirects=True)
+        response = self.client.put(
+            '/bucketlists/1/items/100', data=data,
+            headers=self.token, follow_redirects=True)
 
         self.assertEqual(404, response.status_code)
 
         response = response.data.decode('utf-8')
         self.assertIn('error', response)
         self.assertIn("buckelist item not found", response)
+
+    def test_delete_item(self):
+        response = self.client.delete(
+            '/bucketlists/1/items/1',
+            headers=self.token, follow_redirects=True)
+        self.assertEqual(200, response.status_code)
+        response = response.data.decode('utf-8')
+        self.assertIn("Successfully deleted bucketlist item", response)
+
+    def test_delete_non_existent_item(self):
+        response = self.client.delete(
+            '/bucketlists/1/items/1000',
+            headers=self.token, follow_redirects=True)
+        self.assertEqual(404, response.status_code)
+        response = response.data.decode('utf-8')
+        self.assertIn("That bucketlist item doesn't exist", response)

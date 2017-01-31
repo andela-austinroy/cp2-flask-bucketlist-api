@@ -52,11 +52,6 @@ def verify_auth_token(token):
     return False
 
 
-@app.route('/')
-def home():
-    return "Welcome to my bucketlist api"
-
-
 @app.route('/bucketlists/', methods=['POST'])
 @auth.login_required
 def create_new_bucketlist():
@@ -238,12 +233,10 @@ def update_bucketlist_item(id, item_id):
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['DELETE'])
 @auth.login_required
 def delete_bucketlist_item(id, item_id):
-    id = request.form.get('id')
-    item_id = request.form.get('item_id')
     delete_db_item = BucketListItem.query.filter_by(
         id=item_id, bucketlist_id=id).scalar()
     if delete_db_item is None:
-        return jsonify({"error": "That bucketlist doesn't exist"}), 404
+        return jsonify({"error": "That bucketlist item doesn't exist"}), 404
     db.session.delete(delete_db_item)
     db.session.commit()
     return "Successfully deleted bucketlist item", 200
