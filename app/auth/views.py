@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify, abort
-from flask import url_for
 
 from app import app
 from app.auth.models import User
@@ -56,13 +55,14 @@ def login():
         }), 400
 
     # Fetch user records and verify credentials
+
     user = User.query.filter_by(username=username).first()
 
     if user and user.verify_password_hash(password):
         return jsonify({
             'message': 'Logged in successfully',
             'username': user.username,
-            'token': user.token.decode()
+            'token': user.generate_auth_token()
         })
 
     abort(401, {

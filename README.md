@@ -33,6 +33,13 @@ $ pip install -r requirements.txt
 ```
 ### Running the project locally
 
+
+Innitialize the database
+
+```
+$ python manage.py db init
+```
+
 Run database migrations
 
 ```
