@@ -120,6 +120,17 @@ class TestSingleBucketList(BaseTestCase):
         response = response.data.decode('utf-8')
         self.assertIn(data['name'], response)
 
+    def test_update_non_existent_bucketlist(self):
+        """Asserts user can update bucketlist names"""
+        data = {'name': 'New Bucket'}
+        response = self.client.put(
+            '/bucketlists/1000', data=data, headers=self.token,
+            follow_redirects=True)
+        # Assert the expected data is in the response
+        self.assertEqual(404, response.status_code)
+        response = response.data.decode('utf-8')
+        self.assertIn("Bucketlist not found", response)
+
     def test_update_with_existing_name(self):
         """
         Asserts user can't give bucketlists the same name as existing bucketlists
