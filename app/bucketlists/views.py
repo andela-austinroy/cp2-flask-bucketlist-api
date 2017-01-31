@@ -49,8 +49,6 @@ def verify_auth_token(token):
         print (e.message)
         return abort(401, {'message': 'invalid token'})
 
-    return False
-
 
 @app.route('/bucketlists/', methods=['POST'])
 @auth.login_required
@@ -117,7 +115,7 @@ def fetch_all_bucketlists():
 def fetch_single_bucketlist(id):
     """Returns a single bucketlist"""
     bucketlist = BucketList.query.filter_by(id=id).first()
-    if bucketlist is None:
+    if not bucketlist:
         return jsonify({"error": "bucketlist not found"}), 404
     bucket_items = BucketListItem.query.filter_by(
         bucketlist_id=bucketlist.id).all()
@@ -235,7 +233,7 @@ def update_bucketlist_item(id, item_id):
 def delete_bucketlist_item(id, item_id):
     delete_db_item = BucketListItem.query.filter_by(
         id=item_id, bucketlist_id=id).scalar()
-    if delete_db_item is None:
+    if not delete_db_item:
         return jsonify({"error": "That bucketlist item doesn't exist"}), 404
     db.session.delete(delete_db_item)
     db.session.commit()

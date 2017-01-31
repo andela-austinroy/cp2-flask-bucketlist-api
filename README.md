@@ -12,17 +12,19 @@ These instructions will get you a copy of the project up and running on your loc
 
 1. Python 2.7
 Comes inbuilt for unix but can also be downloaded from
-
-```
-https://www.python.org/downloads/
-```
+[Python downloads](https://www.python.org/downloads/)
 
 ### Installing
 
 Clone this repo from github by running:
-
+with ssh:
 ```
 $ git clone git@github.com:andela-austinroy/cp2-flask-bucketlist-api.git
+```
+
+with http:
+```
+$ git clone https://github.com/andela-austinroy/cp2-flask-bucketlist-api.git
 ```
 
 Set up a virtual environment for the project and install the dependencies
