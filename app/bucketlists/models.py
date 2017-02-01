@@ -10,6 +10,8 @@ class BucketList(db.Model):
     date_modified = db.Column(db.DATETIME, default=db.func.current_timestamp(
     ), onupdate=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
+    bucket_items = db.relationship(
+        'BucketListItem', backref='bucket', lazy='dynamic')
 
     def __init__(self, name, created_by):
         self.name = name
