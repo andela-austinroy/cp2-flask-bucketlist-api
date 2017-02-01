@@ -14,7 +14,6 @@ class User(db.Model):
     username = db.Column(db.String(20), unique=True, index=True)
     password_hash = db.Column(db.BINARY(60))
     date_created = db.Column(db.DATETIME, default=db.func.current_timestamp())
-    token = db.Column(db.String)
 
     def __init__(self, username, password):
         self.username = username
@@ -25,8 +24,9 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def generate_auth_token(self, expiration=600):
-        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'username': self.username})
+        serializer = Serializer(
+            app.config['SECRET_KEY'], expires_in=expiration)
+        return serializer.dumps({'username': self.username})
 
     def save(self):
         db.session.add(self)
