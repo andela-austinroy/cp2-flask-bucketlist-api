@@ -158,7 +158,7 @@ class TestSingleBucketList(BaseTestCase):
         response = self.client.delete(
             '/bucketlists/1',
             headers=self.token)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(404, response.status_code)
         # Check for successful deletion message
         response = response.data.decode('utf-8')
         self.assertIn('Successfully deleted bucketlist', response)
@@ -255,7 +255,7 @@ class TestBucketListItem(BaseTestCase):
         response = self.client.delete(
             '/bucketlists/1/items/1',
             headers=self.token)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(404, response.status_code)
         response = response.data.decode('utf-8')
         self.assertIn("Successfully deleted bucketlist item", response)
 

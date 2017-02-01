@@ -34,7 +34,7 @@ $ mkvirtualenv amity
 $ pip install -r requirements.txt
 ```
 ### Running the project locally
-
+Create a `.env` file in the root directory and save it. It should contain your secret key stored under the variable `SECRET_KEY` which will be used to secure your data.
 
 Innitialize the database
 

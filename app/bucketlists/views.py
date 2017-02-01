@@ -165,7 +165,7 @@ def delete_bucketlist(id):
         return jsonify({"error": "That bucketlist doesn't exist"}), 404
     db.session.delete(delete_db)
     db.session.commit()
-    return "Successfully deleted bucketlist", 200
+    return "Successfully deleted bucketlist", 404
 
 
 @app.route('/bucketlists/<id>/items/', methods=['POST'])
@@ -235,4 +235,4 @@ def delete_bucketlist_item(id, item_id):
         return jsonify({"error": "That bucketlist item doesn't exist"}), 404
     db.session.delete(delete_db_item)
     db.session.commit()
-    return "Successfully deleted bucketlist item", 200
+    return "Successfully deleted bucketlist item", 404

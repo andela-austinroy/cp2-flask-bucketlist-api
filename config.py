@@ -1,6 +1,10 @@
 import os
+from os.path import join, dirname
+from dotenv import load_dotenv, find_dotenv
 
-SECRET_KEY = 'vhnvgcgxfzgyjcfdhtdcxz5w6e43rthr53x5twt'
+load_dotenv(find_dotenv())
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = True
 
