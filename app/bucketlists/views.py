@@ -95,16 +95,12 @@ def fetch_all_bucketlists():
             } for bucketlist in bucketlists.items
 
         ],
-        'next': '{}?q={}&limit={}&page={}'.format(
-            str(url_for('fetch_all_bucketlists', _external=True)),
-            str(q_name),
-            str(limit),
-            str(page_no + 1)) if bucketlists.has_next else None,
-        'prev': '{}?q={}&limit={}&page={}'.format(
-            str(url_for('fetch_all_bucketlists', _external=True)),
-            str(q_name),
-            str(limit),
-            str(page_no - 1)) if bucketlists.has_prev else None
+        'next': url_for(
+            request.endpoint, page_no=bucketlists.next_num, limit=limit,
+            _external=True) if bucketlists.has_next else None,
+        'prev': url_for(
+            request.endpoint, page_no=bucketlists.prev_num, limit=limit,
+            _external=True) if bucketlists.has_prev else None,
     }), 200
 
 
