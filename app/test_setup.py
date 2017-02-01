@@ -46,10 +46,13 @@ class BaseTestCase(unittest.TestCase):
 
         db.session.commit()
 
-        self.token = {'Authorization': 'Token ' + self.austin.token.decode()}
+        self.token = {'Authorization': 'Token ' + self.austin.token.decode(),
+                      'Content-Type': 'application/json'}
         self.expired_token = {'Authorization': 'Token {}'.format(
-            'austin.C2dRGQ.5bEgRGpUpHnxUDfS7WMB6crzlLA')}
-        self.invalid_token = {'Authorization': 'Token abc'}
+            'austin.C2dRGQ.5bEgRGpUpHnxUDfS7WMB6crzlLA'),
+            'Content-Type': 'application/json'}
+        self.invalid_token = {'Authorization': 'Token abc',
+                              'Content-Type': 'application/json'}
 
     def tearDown(self):
         """Clears data upon test completion"""

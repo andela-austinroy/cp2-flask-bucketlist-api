@@ -12,8 +12,6 @@ auth = HTTPTokenAuth('Token')
 
 bucketlists = Blueprint('bucketlists', __name__, url_prefix='/bucketlists')
 
-buckets = []
-
 
 @app.errorhandler(401)
 def custom401error(exception):
@@ -37,10 +35,10 @@ def custom400error(exception):
 
 @auth.verify_token
 def verify_auth_token(token):
-    s = Serializer(app.config['SECRET_KEY'])
+    serializer = Serializer(app.config['SECRET_KEY'])
 
     try:
-        data = s.loads(token)
+        data = serializer.loads(token)
         user = User.query.filter_by(username=data['username']).scalar()
         if user:
             g.user_id = user.id
@@ -54,7 +52,7 @@ def verify_auth_token(token):
 @auth.login_required
 def create_new_bucketlist():
     """Adds a new bucketlist"""
-    name = request.form.get('name')
+    name = request.json.get('name')
     created_by = g.user_id
     new_bucketlist = BucketList(name, created_by)
     new_bucketlist.save()
@@ -148,11 +146,11 @@ def update_bucketlist(id):
     if not update_bucket:
         return jsonify({"error": "Bucketlist not found"}), 404
     existing_bucketlist = BucketList.query.filter_by(
-        name=request.form.get('name')).first()
+        name=request.json.get('name')).first()
     if existing_bucketlist:
         return abort(403,
                      {'error': 'That bucketlist name has already been used'})
-    update_bucket.name = request.form.get('name', update_bucket.name)
+    update_bucket.name = request.json.get('name', update_bucket.name)
     update_bucket.save()
     return jsonify({"success": "Changes saved to bucketlist",
                     "name": update_bucket.name
@@ -179,8 +177,8 @@ def add_bucketlist_item(id):
     bucketlist = BucketList.query.filter_by(id=id).first()
     if not bucketlist:
         return abort(404, {"error": "bucket list does not exist"})
-    name = request.form.get('name')
-    description = request.form.get('description')
+    name = request.json.get('name')
+    description = request.json.get('description')
     done = 'false'
     new_bucketlistitem = BucketListItem(name, description, bucketlist_id, done)
     new_bucketlistitem.save()
@@ -205,20 +203,20 @@ def update_bucketlist_item(id, item_id):
         id=item_id, bucketlist_id=id).scalar()
     if not update_bucket_item:
         abort(404, ({"error": "buckelist item not found"}))
-    if request.form.get('name'):
-        update_bucket_item.name = request.form.get('name')
-    if request.form.get('description'):
-        update_bucket_item.description = request.form.get(
+    if request.json.get('name'):
+        update_bucket_item.name = request.json.get('name')
+    if request.json.get('description'):
+        update_bucket_item.description = request.json.get(
             'description', update_bucket_item.description)
-    if request.form.get('done'):
-        print request.form.get('done')
-        if request.form.get('done').upper() != "TRUE" \
-                and request.form.get('done').upper() != "FALSE":
+    if request.json.get('done'):
+        print request.json.get('done')
+        if request.json.get('done').upper() != "TRUE" \
+                and request.json.get('done').upper() != "FALSE":
             return abort(400,
                          {"error": "done should be either 'True' or 'False'"})
-        if request.form.get('done').upper() == "TRUE":
+        if request.json.get('done').upper() == "TRUE":
             update_bucket_item.done = True
-        elif request.form.get('done').upper() == "FALSE":
+        elif request.json.get('done').upper() == "FALSE":
             update_bucket_item.done = False
     update_bucket_item.save()
     return jsonify({"success": "Changes saved to item",

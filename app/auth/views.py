@@ -10,8 +10,8 @@ auth = Blueprint('auth', __name__, url_prefix='/auth')
 @app.route('/auth/register/', methods=['POST'])
 def register():
     """Registers users in the system"""
-    username = request.form.get('username')
-    password = request.form.get('password')
+    username = request.json.get('username')
+    password = request.json.get('password')
     # Prevent registeration without password
     if not username:
         return jsonify({
@@ -41,8 +41,8 @@ def register():
 @app.route('/auth/login/', methods=['POST'])
 def login():
     """"Logs in registered users"""
-    username = request.form.get('username')
-    password = request.form.get('password')
+    username = request.json.get('username')
+    password = request.json.get('password')
     # Prevent login without username
     if not username:
         return jsonify({
