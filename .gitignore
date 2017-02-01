@@ -3,4 +3,3 @@
 .coverage
 *cover/
 bucketlist.sqlite
-.env
