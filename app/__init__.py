@@ -4,8 +4,10 @@ from itsdangerous import TimestampSigner, SignatureExpired, BadSignature
 import config
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer)
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 app.config.from_object('config')
 db = SQLAlchemy(app)
