@@ -9,6 +9,8 @@ from app.bucketlists.models import BucketList, BucketListItem
 
 auth = HTTPTokenAuth('Token')
 
+user_id = 1
+
 
 bucketlists = Blueprint('bucketlists', __name__, url_prefix='/bucketlists')
 
@@ -33,27 +35,27 @@ def custom400error(exception):
     return jsonify(exception.description), 400
 
 
-@auth.verify_token
-def verify_auth_token(token):
-    serializer = Serializer(app.config['SECRET_KEY'])
+# @auth.verify_token
+# def verify_auth_token(token):
+#     serializer = Serializer(app.config['SECRET_KEY'])
 
-    try:
-        data = serializer.loads(token)
-        user = User.query.filter_by(username=data['username']).scalar()
-        if user:
-            g.user_id = user.id
-            return True
-    except (SignatureExpired, BadSignature) as e:
-        print (e.message)
-        return abort(401, {'message': 'invalid token'})
+#     try:
+#         data = serializer.loads(token)
+#         user = User.query.filter_by(username=data['username']).scalar()
+#         if user:
+#             g.user_id = user.id
+#             return True
+#     except (SignatureExpired, BadSignature) as e:
+#         print (e.message)
+#         return abort(401, {'message': 'invalid token'})
 
 
 @app.route('/bucketlists/', methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def create_new_bucketlist():
     """Adds a new bucketlist"""
     name = request.json.get('name')
-    created_by = g.user_id
+    created_by = user_id
     new_bucketlist = BucketList(name, created_by)
     new_bucketlist.save()
     new_bucketlist.refresh_from_db()
@@ -67,8 +69,25 @@ def create_new_bucketlist():
                     }), 201
 
 
+def fetch_bucketlist_items(bucketlist_id):
+    bucket_items = BucketListItem.query.filter_by(
+        bucketlist_id=bucketlist_id).all()
+    if bucket_items is None:
+        list_items = []
+    else:
+        list_items = [{
+            'id': bucket_item.id,
+            'name': bucket_item.name,
+            'description': bucket_item.description,
+            'date_created': bucket_item.date_created,
+            'date_modified': bucket_item.date_modified,
+            'done': bucket_item.done
+        } for bucket_item in bucket_items]
+    return list_items
+
+
 @app.route('/bucketlists/', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def fetch_all_bucketlists():
     """Returns all bucketlists"""
 
@@ -77,7 +96,7 @@ def fetch_all_bucketlists():
     q_name = request.args.get('q', "")
 
     bucketlists = BucketList.query.filter_by(
-        created_by=g.user_id).filter(
+        created_by=user_id).filter(
         BucketList.name.like('%{}%'.format(q_name))).paginate(
         int(page_no), int(limit))
 
@@ -90,6 +109,7 @@ def fetch_all_bucketlists():
                 'id': bucketlist.id,
                 'name': bucketlist.name,
                 'created_by': bucketlist.created_by,
+                'items': fetch_bucketlist_items(bucketlist.id),
                 'date_created': bucketlist.date_created,
                 'date_modified': bucketlist.date_modified
             } for bucketlist in bucketlists.items
@@ -105,7 +125,7 @@ def fetch_all_bucketlists():
 
 
 @app.route('/bucketlists/<id>', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def fetch_single_bucketlist(id):
     """Returns a single bucketlist"""
     bucketlist = BucketList.query.filter_by(id=id).first()
@@ -134,7 +154,7 @@ def fetch_single_bucketlist(id):
 
 
 @app.route('/bucketlists/<id>', methods=['PUT'])
-@auth.login_required
+# @auth.login_required
 def update_bucketlist(id):
     """Updates a bucketlist's details"""
     update_bucket = BucketList.query.filter_by(
@@ -154,18 +174,18 @@ def update_bucketlist(id):
 
 
 @app.route('/bucketlists/<id>', methods=['DELETE'])
-@auth.login_required
+# @auth.login_required
 def delete_bucketlist(id):
     delete_db = BucketList.query.filter_by(id=id).scalar()
     if delete_db is None:
         return jsonify({"error": "That bucketlist doesn't exist"}), 404
     db.session.delete(delete_db)
     db.session.commit()
-    return "Successfully deleted bucketlist", 404
+    return "Successfully deleted bucketlist", 200
 
 
 @app.route('/bucketlists/<id>/items/', methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def add_bucketlist_item(id):
     """Adds an item to an existing bucketlist"""
     bucketlist_id = id
@@ -191,7 +211,7 @@ def add_bucketlist_item(id):
 
 
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['PUT'])
-@auth.login_required
+# @auth.login_required
 def update_bucketlist_item(id, item_id):
     id = id
     item_id = item_id
@@ -223,7 +243,7 @@ def update_bucketlist_item(id, item_id):
 
 
 @app.route('/bucketlists/<id>/items/<item_id>', methods=['DELETE'])
-@auth.login_required
+# @auth.login_required
 def delete_bucketlist_item(id, item_id):
     delete_db_item = BucketListItem.query.filter_by(
         id=item_id, bucketlist_id=id).scalar()
@@ -231,4 +251,4 @@ def delete_bucketlist_item(id, item_id):
         return jsonify({"error": "That bucketlist item doesn't exist"}), 404
     db.session.delete(delete_db_item)
     db.session.commit()
-    return "Successfully deleted bucketlist item", 404
+    return "Successfully deleted bucketlist item", 200
